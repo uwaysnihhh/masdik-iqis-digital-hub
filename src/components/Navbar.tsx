@@ -1,0 +1,100 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const navLinks = [
+  { name: "Beranda", href: "/" },
+  { name: "Kegiatan", href: "/kegiatan" },
+  { name: "Layanan", href: "/layanan" },
+  { name: "Struktur", href: "/struktur" },
+  { name: "Saldo", href: "/saldo" },
+];
+
+export function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16 lg:h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 gradient-islamic rounded-xl flex items-center justify-center shadow-islamic">
+              <span className="text-primary-foreground font-arabic text-lg lg:text-xl font-bold">م</span>
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="font-bold text-foreground text-sm lg:text-base">MASDIK IQIS</h1>
+              <p className="text-xs text-muted-foreground">Masjid Pendidikan Ibnul Qayyim</p>
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+                  location.pathname === link.href
+                    ? "bg-primary text-primary-foreground shadow-islamic"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Admin Button */}
+          <div className="hidden lg:block">
+            <Link to="/admin">
+              <Button variant="outline" size="sm">
+                Admin Panel
+              </Button>
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Nav */}
+        {isOpen && (
+          <div className="lg:hidden py-4 border-t border-border animate-fade-in">
+            <div className="flex flex-col gap-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300",
+                    location.pathname === link.href
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <Link to="/admin" onClick={() => setIsOpen(false)}>
+                <Button variant="outline" className="w-full mt-2">
+                  Admin Panel
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+}
