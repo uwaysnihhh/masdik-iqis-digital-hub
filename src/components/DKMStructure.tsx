@@ -3,25 +3,42 @@ import { User } from "lucide-react";
 import type { DKMMember } from "@/types";
 
 const dkmMembers: DKMMember[] = [
-  { id: "1", name: "H. Ahmad Ridwan, S.Ag", position: "Ketua DKM" },
-  { id: "2", name: "Ustadz Muhammad Yusuf", position: "Wakil Ketua" },
-  { id: "3", name: "H. Abdullah Rahman", position: "Sekretaris" },
-  { id: "4", name: "Ir. Bambang Supriyadi", position: "Bendahara" },
-  { id: "5", name: "Ustadz Hasan Basri", position: "Koordinator Ibadah" },
-  { id: "6", name: "Drs. Suparto, M.Pd", position: "Koordinator Pendidikan" },
-  { id: "7", name: "H. Surya Darma", position: "Koordinator Sosial" },
-  { id: "8", name: "Ustadz Fauzi Rahman", position: "Koordinator Dakwah" },
+  // Pembina & Penasihat
+  { id: "1", name: "drh. Islan Arvan Nurgas, M.Si.", position: "Ketua YPI Ibnul Qayyim Makassar", role: "pembina" },
+  { id: "2", name: "Ustadz Budi Hariyanto, Lc., M.Pd.", position: "Dewan Pembina YPI Ibnul Qayyim Makassar", role: "pembina" },
+  // Ketua
+  { id: "3", name: "Muflih Habibullah, S.Pd.", position: "Ketua", role: "ketua" },
+  // Sekretaris
+  { id: "4", name: "Muhammad Alifyan Zulkarnain, S.Tr.T.", position: "Sekretaris", role: "sekretaris" },
+  // Bendahara
+  { id: "5", name: "Maududi Djamal, S.I.K.", position: "Bendahara", role: "bendahara" },
+  // Bidang Keagamaan & Pembinaan
+  { id: "6", name: "Ustadz Mustaqiem Musytari, S.Pd., M.Pd.", position: "Bidang Keagamaan & Pembinaan", role: "bidang" },
+  { id: "7", name: "Ustadz Ali Amran, S.H.I., M.H.", position: "Bidang Keagamaan & Pembinaan", role: "bidang" },
+  { id: "8", name: "Ustadz Muhammad Yusuf, S.Pd.", position: "Bidang Keagamaan & Pembinaan", role: "bidang" },
+  // Bidang Humas
+  { id: "9", name: "Mashuri, S.Pd.", position: "Bidang Humas", role: "bidang" },
+  { id: "10", name: "Hammam Abdul Aziz", position: "Bidang Humas", role: "bidang" },
+  // Bidang Sarana & Prasarana
+  { id: "11", name: "Adnan Pabean, S.Pd.", position: "Bidang Sarana & Prasarana", role: "bidang" },
+  // Bidang Perawatan & Kebersihan
+  { id: "12", name: "Suhardi", position: "Bidang Perawatan & Kebersihan", role: "bidang" },
+  // Marbot
+  { id: "13", name: "Rizki Ridho", position: "Marbot", role: "marbot" },
+  { id: "14", name: "Suhaib", position: "Marbot", role: "marbot" },
+  { id: "15", name: "Ali Abdurrozzaq", position: "Marbot", role: "marbot" },
 ];
 
 export function DKMStructure() {
-  const ketua = dkmMembers.find((m) => m.position === "Ketua DKM");
-  const wakil = dkmMembers.find((m) => m.position === "Wakil Ketua");
-  const sekben = dkmMembers.filter((m) =>
-    ["Sekretaris", "Bendahara"].includes(m.position)
-  );
-  const koordinator = dkmMembers.filter((m) =>
-    m.position.includes("Koordinator")
-  );
+  const pembina = dkmMembers.filter((m) => m.role === "pembina");
+  const ketua = dkmMembers.find((m) => m.role === "ketua");
+  const sekretaris = dkmMembers.find((m) => m.role === "sekretaris");
+  const bendahara = dkmMembers.find((m) => m.role === "bendahara");
+  const bidangKeagamaan = dkmMembers.filter((m) => m.position === "Bidang Keagamaan & Pembinaan");
+  const bidangHumas = dkmMembers.filter((m) => m.position === "Bidang Humas");
+  const bidangSarana = dkmMembers.filter((m) => m.position === "Bidang Sarana & Prasarana");
+  const bidangPerawatan = dkmMembers.filter((m) => m.position === "Bidang Perawatan & Kebersihan");
+  const marbot = dkmMembers.filter((m) => m.role === "marbot");
 
   return (
     <div className="space-y-8">
@@ -36,22 +53,25 @@ export function DKMStructure() {
         <div className="h-1 w-24 mx-auto gradient-gold rounded-full mt-4" />
       </div>
 
-      {/* Ketua */}
-      {ketua && (
-        <div className="flex justify-center">
-          <MemberCard member={ketua} isLeader />
+      {/* Pembina & Penasihat */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-center text-foreground">Pembina & Penasihat</h3>
+        <div className="flex justify-center gap-4 flex-wrap">
+          {pembina.map((member) => (
+            <MemberCard key={member.id} member={member} variant="pembina" />
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Connecting Line */}
       <div className="flex justify-center">
         <div className="w-0.5 h-8 bg-border" />
       </div>
 
-      {/* Wakil */}
-      {wakil && (
+      {/* Ketua */}
+      {ketua && (
         <div className="flex justify-center">
-          <MemberCard member={wakil} isVice />
+          <MemberCard member={ketua} variant="ketua" />
         </div>
       )}
 
@@ -62,9 +82,8 @@ export function DKMStructure() {
 
       {/* Sekretaris & Bendahara */}
       <div className="flex justify-center gap-4 lg:gap-8 flex-wrap">
-        {sekben.map((member) => (
-          <MemberCard key={member.id} member={member} />
-        ))}
+        {sekretaris && <MemberCard member={sekretaris} variant="sekben" />}
+        {bendahara && <MemberCard member={bendahara} variant="sekben" />}
       </div>
 
       {/* Connecting Line */}
@@ -72,11 +91,62 @@ export function DKMStructure() {
         <div className="w-0.5 h-8 bg-border" />
       </div>
 
-      {/* Koordinator */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {koordinator.map((member) => (
-          <MemberCard key={member.id} member={member} isCoordinator />
-        ))}
+      {/* Bidang-bidang */}
+      <div className="space-y-6">
+        {/* Bidang Keagamaan & Pembinaan */}
+        <div className="space-y-3">
+          <h4 className="text-lg font-semibold text-center text-primary">Bidang Keagamaan & Pembinaan</h4>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {bidangKeagamaan.map((member) => (
+              <MemberCard key={member.id} member={member} variant="bidang" />
+            ))}
+          </div>
+        </div>
+
+        {/* Bidang Humas */}
+        <div className="space-y-3">
+          <h4 className="text-lg font-semibold text-center text-primary">Bidang Humas</h4>
+          <div className="flex justify-center gap-4 flex-wrap">
+            {bidangHumas.map((member) => (
+              <MemberCard key={member.id} member={member} variant="bidang" />
+            ))}
+          </div>
+        </div>
+
+        {/* Bidang Sarana & Prasarana */}
+        <div className="space-y-3">
+          <h4 className="text-lg font-semibold text-center text-primary">Bidang Sarana & Prasarana</h4>
+          <div className="flex justify-center gap-4 flex-wrap">
+            {bidangSarana.map((member) => (
+              <MemberCard key={member.id} member={member} variant="bidang" />
+            ))}
+          </div>
+        </div>
+
+        {/* Bidang Perawatan & Kebersihan */}
+        <div className="space-y-3">
+          <h4 className="text-lg font-semibold text-center text-primary">Bidang Perawatan & Kebersihan</h4>
+          <div className="flex justify-center gap-4 flex-wrap">
+            {bidangPerawatan.map((member) => (
+              <MemberCard key={member.id} member={member} variant="bidang" />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Connecting Line */}
+      <div className="flex justify-center">
+        <div className="w-0.5 h-8 bg-border" />
+      </div>
+
+      {/* Marbot */}
+      <div className="space-y-3">
+        <h4 className="text-lg font-semibold text-center text-foreground">Marbot</h4>
+        <div className="flex justify-center gap-4 flex-wrap">
+          {marbot.map((member) => (
+            <MemberCard key={member.id} member={member} variant="marbot" />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -84,45 +154,51 @@ export function DKMStructure() {
 
 function MemberCard({
   member,
-  isLeader = false,
-  isVice = false,
-  isCoordinator = false,
+  variant = "default",
 }: {
   member: DKMMember;
-  isLeader?: boolean;
-  isVice?: boolean;
-  isCoordinator?: boolean;
+  variant?: "pembina" | "ketua" | "sekben" | "bidang" | "marbot" | "default";
 }) {
+  const variantStyles = {
+    pembina: "bg-primary/5 border-2 border-primary/20",
+    ketua: "shadow-islamic gradient-islamic",
+    sekben: "bg-accent/10 border-2 border-accent/30",
+    bidang: "bg-card shadow-lg hover:shadow-islamic",
+    marbot: "bg-muted/50",
+    default: "bg-card shadow-lg",
+  };
+
+  const isKetua = variant === "ketua";
+
   return (
     <Card
       className={`
         border-0 transition-all duration-300 hover:-translate-y-1 
-        ${isLeader ? "shadow-islamic gradient-islamic" : "shadow-lg hover:shadow-islamic"}
-        ${isVice ? "bg-primary/5 border-2 border-primary/20" : ""}
-        ${isCoordinator ? "bg-card" : ""}
+        ${variantStyles[variant]}
+        ${variant === "bidang" || variant === "marbot" ? "w-full sm:w-auto sm:min-w-[200px]" : ""}
       `}
     >
-      <CardContent className={`p-6 text-center ${isLeader ? "text-primary-foreground" : ""}`}>
+      <CardContent className={`p-6 text-center ${isKetua ? "text-primary-foreground" : ""}`}>
         <div
           className={`
-            w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4
-            ${isLeader ? "bg-primary-foreground/20" : "bg-primary/10"}
+            w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3
+            ${isKetua ? "bg-primary-foreground/20" : "bg-primary/10"}
           `}
         >
           <User
-            className={`w-8 h-8 ${isLeader ? "text-primary-foreground" : "text-primary"}`}
+            className={`w-7 h-7 ${isKetua ? "text-primary-foreground" : "text-primary"}`}
           />
         </div>
         <h3
-          className={`font-bold text-lg mb-1 ${
-            isLeader ? "text-primary-foreground" : "text-foreground"
+          className={`font-bold text-base mb-1 ${
+            isKetua ? "text-primary-foreground" : "text-foreground"
           }`}
         >
           {member.name}
         </h3>
         <p
           className={`text-sm ${
-            isLeader ? "text-primary-foreground/80" : "text-muted-foreground"
+            isKetua ? "text-primary-foreground/80" : "text-muted-foreground"
           }`}
         >
           {member.position}

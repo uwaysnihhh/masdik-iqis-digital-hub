@@ -1,7 +1,54 @@
+import { useState, useEffect } from "react";
 import { MapPin, Phone, Mail } from "lucide-react";
 import logoMasjid from "@/assets/logo-masjid.png";
 
+interface PrayerTimeData {
+  name: string;
+  time: string;
+}
+
+const defaultPrayerTimes: PrayerTimeData[] = [
+  { name: "Subuh", time: "04:30" },
+  { name: "Dzuhur", time: "12:00" },
+  { name: "Ashar", time: "15:15" },
+  { name: "Maghrib", time: "18:00" },
+  { name: "Isya", time: "19:15" },
+];
+
 export function Footer() {
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData[]>(defaultPrayerTimes);
+
+  useEffect(() => {
+    const fetchPrayerTimes = async () => {
+      try {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const day = today.getDate();
+        
+        const response = await fetch(
+          `https://api.aladhan.com/v1/timings/${day}-${month}-${year}?latitude=-5.1477&longitude=119.4327&method=20`
+        );
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          const timings = data.data.timings;
+          setPrayerTimes([
+            { name: "Subuh", time: timings.Fajr },
+            { name: "Dzuhur", time: timings.Dhuhr },
+            { name: "Ashar", time: timings.Asr },
+            { name: "Maghrib", time: timings.Maghrib },
+            { name: "Isya", time: timings.Isha },
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch prayer times:", error);
+      }
+    };
+
+    fetchPrayerTimes();
+  }, []);
+
   return (
     <footer className="bg-foreground text-background">
       <div className="container mx-auto px-4 py-12">
@@ -48,26 +95,12 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-lg mb-4">Jadwal Shalat</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li className="flex justify-between">
-                <span>Subuh</span>
-                <span className="text-gold">04:30</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Dzuhur</span>
-                <span className="text-gold">12:00</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Ashar</span>
-                <span className="text-gold">15:15</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Maghrib</span>
-                <span className="text-gold">18:00</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Isya</span>
-                <span className="text-gold">19:15</span>
-              </li>
+              {prayerTimes.map((prayer) => (
+                <li key={prayer.name} className="flex justify-between">
+                  <span>{prayer.name}</span>
+                  <span className="text-gold">{prayer.time}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

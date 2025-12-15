@@ -52,15 +52,6 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Admin Button */}
-          <div className="hidden lg:block">
-            <Link to="/admin-login">
-              <Button variant="outline" size="sm">
-                Admin
-              </Button>
-            </Link>
-          </div>
-
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -89,11 +80,6 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))}
-              <Link to="/admin-login" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full mt-2">
-                  Admin
-                </Button>
-              </Link>
             </div>
           </div>
         )}

@@ -28,6 +28,7 @@ export interface BookingRequest {
 export interface DKMMember {
   id: string;
   name: string;
+  role?: string;
   position: string;
   photo?: string;
 }
