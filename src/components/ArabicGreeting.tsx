@@ -8,7 +8,7 @@ export function ArabicGreeting() {
       </p>
       <div className="h-1 w-32 mx-auto gradient-gold rounded-full" />
       <p className="text-muted-foreground text-lg">
-        Selamat Datang di Masjid Pendidikan Ibnul Qayyim, Makassar
+        Selamat Datang di Masjid Pendidikan Ibnul Qayyim Makassar
       </p>
     </div>
   );
