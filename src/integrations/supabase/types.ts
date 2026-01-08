@@ -14,16 +14,222 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_date: string
+          event_time: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date: string
+          event_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dkm_members: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          order_index: number | null
+          photo_url: string | null
+          position: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          order_index?: number | null
+          photo_url?: string | null
+          position: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          order_index?: number | null
+          photo_url?: string | null
+          position?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reservations: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string
+          reservation_date: string
+          reservation_time: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone: string
+          reservation_date: string
+          reservation_time: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          reservation_date?: string
+          reservation_time?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +356,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
