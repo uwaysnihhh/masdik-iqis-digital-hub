@@ -254,8 +254,13 @@ export default function Admin() {
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
 
+  const [statDialogOpen, setStatDialogOpen] = useState<string | null>(null);
+
+  const pendingBookings = bookings.filter((b) => b.status === "pending");
+
   const stats = [
     {
+      id: "saldo",
       title: "Total Saldo",
       value: formatCurrency(45750000),
       icon: Wallet,
@@ -263,6 +268,7 @@ export default function Admin() {
       trendUp: true,
     },
     {
+      id: "pemasukan",
       title: "Total Pemasukan",
       value: formatCurrency(totalIncome),
       icon: TrendingUp,
@@ -270,6 +276,7 @@ export default function Admin() {
       trendUp: true,
     },
     {
+      id: "pengeluaran",
       title: "Total Pengeluaran",
       value: formatCurrency(totalExpense),
       icon: TrendingDown,
@@ -277,13 +284,15 @@ export default function Admin() {
       trendUp: false,
     },
     {
+      id: "reservasi",
       title: "Reservasi Pending",
-      value: bookings.filter((b) => b.status === "pending").length.toString(),
+      value: pendingBookings.length.toString(),
       icon: Clock,
       trend: "Butuh tindakan",
       trendUp: null,
     },
     {
+      id: "kegiatan",
       title: "Kegiatan Bulan Ini",
       value: events.length.toString(),
       icon: CalendarDays,
@@ -291,6 +300,129 @@ export default function Admin() {
       trendUp: true,
     },
   ];
+
+  const incomeTransactions = transactions.filter((t) => t.type === "income");
+  const expenseTransactions = transactions.filter((t) => t.type === "expense");
+
+  const renderStatDialogContent = (statId: string) => {
+    switch (statId) {
+      case "saldo":
+        return (
+          <div className="space-y-4">
+            <div className="text-center p-4 bg-primary/10 rounded-lg">
+              <p className="text-sm text-muted-foreground">Saldo Saat Ini</p>
+              <p className="text-3xl font-bold text-primary">{formatCurrency(45750000)}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-green-50 rounded-lg">
+                <p className="text-xs text-muted-foreground">Total Pemasukan</p>
+                <p className="text-lg font-semibold text-green-600">{formatCurrency(totalIncome)}</p>
+              </div>
+              <div className="p-3 bg-red-50 rounded-lg">
+                <p className="text-xs text-muted-foreground">Total Pengeluaran</p>
+                <p className="text-lg font-semibold text-red-600">{formatCurrency(totalExpense)}</p>
+              </div>
+            </div>
+          </div>
+        );
+      case "pemasukan":
+        return (
+          <div className="space-y-3">
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Total Pemasukan</p>
+              <p className="text-3xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {incomeTransactions.map((tx) => (
+                <div key={tx.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-sm">{tx.description}</p>
+                    <p className="text-xs text-muted-foreground">{tx.date}</p>
+                  </div>
+                  <p className="font-semibold text-green-600">{formatCurrency(tx.amount)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "pengeluaran":
+        return (
+          <div className="space-y-3">
+            <div className="text-center p-4 bg-red-50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Total Pengeluaran</p>
+              <p className="text-3xl font-bold text-red-600">{formatCurrency(totalExpense)}</p>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {expenseTransactions.map((tx) => (
+                <div key={tx.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-sm">{tx.description}</p>
+                    <p className="text-xs text-muted-foreground">{tx.date}</p>
+                  </div>
+                  <p className="font-semibold text-red-600">{formatCurrency(tx.amount)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "reservasi":
+        return (
+          <div className="space-y-3">
+            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Reservasi Pending</p>
+              <p className="text-3xl font-bold text-yellow-600">{pendingBookings.length}</p>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {pendingBookings.length > 0 ? pendingBookings.map((booking) => (
+                <div key={booking.id} className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-sm">{booking.name}</p>
+                      <p className="text-xs text-muted-foreground">{booking.activity}</p>
+                    </div>
+                    <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {booking.date} • {booking.timeStart} - {booking.timeEnd}
+                  </p>
+                </div>
+              )) : (
+                <p className="text-center text-muted-foreground py-4">Tidak ada reservasi pending</p>
+              )}
+            </div>
+          </div>
+        );
+      case "kegiatan":
+        return (
+          <div className="space-y-3">
+            <div className="text-center p-4 bg-primary/10 rounded-lg">
+              <p className="text-sm text-muted-foreground">Kegiatan Bulan Ini</p>
+              <p className="text-3xl font-bold text-primary">{events.length}</p>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {events.length > 0 ? events.map((event) => (
+                <div key={event.id} className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-sm">{event.title}</p>
+                      <p className="text-xs text-muted-foreground">{event.description}</p>
+                    </div>
+                    <Badge variant="outline">{event.type}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {event.date} • {event.time}
+                  </p>
+                </div>
+              )) : (
+                <p className="text-center text-muted-foreground py-4">Tidak ada kegiatan bulan ini</p>
+              )}
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -373,37 +505,50 @@ export default function Admin() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
           {stats.map((stat, index) => (
-            <Card key={index} className="border-0 shadow-lg">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm text-muted-foreground mb-1 truncate">{stat.title}</p>
-                    <p className="text-lg md:text-2xl font-bold text-foreground truncate">{stat.value}</p>
-                    {stat.trendUp !== null && (
-                      <p
-                        className={cn(
-                          "text-xs mt-1 flex items-center gap-1",
-                          stat.trendUp ? "text-primary" : "text-destructive"
+            <Dialog key={index} open={statDialogOpen === stat.id} onOpenChange={(open) => setStatDialogOpen(open ? stat.id : null)}>
+              <DialogTrigger asChild>
+                <Card className="border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow">
+                  <CardContent className="p-4 md:p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs md:text-sm text-muted-foreground mb-1 truncate">{stat.title}</p>
+                        <p className="text-lg md:text-2xl font-bold text-foreground truncate">{stat.value}</p>
+                        {stat.trendUp !== null && (
+                          <p
+                            className={cn(
+                              "text-xs mt-1 flex items-center gap-1",
+                              stat.trendUp ? "text-primary" : "text-destructive"
+                            )}
+                          >
+                            {stat.trendUp ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3" />
+                            )}
+                            {stat.trend}
+                          </p>
                         )}
-                      >
-                        {stat.trendUp ? (
-                          <TrendingUp className="w-3 h-3" />
-                        ) : (
-                          <TrendingDown className="w-3 h-3" />
+                        {stat.trendUp === null && (
+                          <p className="text-xs mt-1 text-yellow-600">{stat.trend}</p>
                         )}
-                        {stat.trend}
-                      </p>
-                    )}
-                    {stat.trendUp === null && (
-                      <p className="text-xs mt-1 text-yellow-600">{stat.trend}</p>
-                    )}
-                  </div>
-                  <div className="w-10 h-10 md:w-12 md:h-12 gradient-islamic rounded-xl flex items-center justify-center shrink-0 ml-2">
-                    <stat.icon className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                      </div>
+                      <div className="w-10 h-10 md:w-12 md:h-12 gradient-islamic rounded-xl flex items-center justify-center shrink-0 ml-2">
+                        <stat.icon className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <stat.icon className="w-5 h-5" />
+                    {stat.title}
+                  </DialogTitle>
+                </DialogHeader>
+                {renderStatDialogContent(stat.id)}
+              </DialogContent>
+            </Dialog>
           ))}
         </div>
 

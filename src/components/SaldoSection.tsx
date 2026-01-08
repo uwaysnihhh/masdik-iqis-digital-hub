@@ -43,9 +43,6 @@ export function SaldoSection() {
             <div>
               <p className="text-primary-foreground/80 text-sm mb-1">Saldo Masjid</p>
               <p className="text-3xl lg:text-4xl font-bold">{formatCurrency(saldoData.total)}</p>
-              <p className="text-primary-foreground/70 text-xs mt-2">
-                Terakhir diperbarui: {saldoData.lastUpdated.toLocaleDateString("id-ID")}
-              </p>
             </div>
             <div className="hidden sm:block">
               <Wallet className="w-16 h-16 text-primary-foreground/30" />
