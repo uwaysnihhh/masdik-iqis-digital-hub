@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,21 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Send, CheckCircle, Clock } from "lucide-react";
+import { CalendarIcon, Send, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-
-// Tanggal dengan waktu yang sudah dipesan (format: "YYYY-MM-DD-HH:MM")
-const bookedSlots = [
-  { date: new Date(2024, 11, 15), time: "08:00" },
-  { date: new Date(2024, 11, 15), time: "10:00" },
-  { date: new Date(2024, 11, 20), time: "08:00" },
-  { date: new Date(2024, 11, 20), time: "14:00" },
-  { date: new Date(2024, 11, 20), time: "19:00" },
-  { date: new Date(2024, 11, 25), time: "08:00" },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const timeSlots = [
   { value: "08:00", label: "08:00 - 10:00" },
@@ -40,10 +31,17 @@ const activityTypes = [
   { value: "lainnya", label: "Lainnya" },
 ];
 
+interface BookedSlot {
+  date: string;
+  time: string;
+}
+
 export function BookingForm() {
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState<string>("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -52,31 +50,46 @@ export function BookingForm() {
     description: "",
   });
 
+  // Fetch approved reservations to show booked slots
+  useEffect(() => {
+    const fetchBookedSlots = async () => {
+      const { data, error } = await supabase
+        .from("reservations")
+        .select("reservation_date, reservation_time")
+        .eq("status", "approved");
+
+      if (!error && data) {
+        setBookedSlots(
+          data.map((r) => ({
+            date: r.reservation_date,
+            time: r.reservation_time,
+          }))
+        );
+      }
+    };
+
+    fetchBookedSlots();
+  }, []);
+
   // Cek slot waktu yang tersedia untuk tanggal tertentu
   const getAvailableSlots = (selectedDate: Date) => {
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
     const bookedTimes = bookedSlots
-      .filter(slot => slot.date.toDateString() === selectedDate.toDateString())
-      .map(slot => slot.time);
-    return timeSlots.filter(slot => !bookedTimes.includes(slot.value));
-  };
-
-  // Cek apakah tanggal memiliki slot tersedia
-  const hasAvailableSlots = (day: Date) => {
-    const bookedTimes = bookedSlots
-      .filter(slot => slot.date.toDateString() === day.toDateString())
-      .map(slot => slot.time);
-    return bookedTimes.length < timeSlots.length;
+      .filter((slot) => slot.date === dateStr)
+      .map((slot) => slot.time);
+    return timeSlots.filter((slot) => !bookedTimes.includes(slot.value));
   };
 
   // Cek apakah tanggal fully booked
   const isFullyBooked = (day: Date) => {
+    const dateStr = format(day, "yyyy-MM-dd");
     const bookedTimes = bookedSlots
-      .filter(slot => slot.date.toDateString() === day.toDateString())
-      .map(slot => slot.time);
+      .filter((slot) => slot.date === dateStr)
+      .map((slot) => slot.time);
     return bookedTimes.length >= timeSlots.length;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name || !formData.phone || !formData.activity || !date || !time) {
@@ -88,7 +101,30 @@ export function BookingForm() {
       return;
     }
 
-    // Simulate submission
+    setIsLoading(true);
+
+    const { error } = await supabase.from("reservations").insert({
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email || null,
+      activity_type: formData.activity,
+      reservation_date: format(date, "yyyy-MM-dd"),
+      reservation_time: time,
+      description: formData.description || null,
+      status: "pending",
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      toast({
+        title: "Gagal Mengirim",
+        description: "Terjadi kesalahan, silakan coba lagi",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitted(true);
     toast({
       title: "Pengajuan Berhasil!",
@@ -110,7 +146,15 @@ export function BookingForm() {
             Terima kasih telah mengajukan reservasi. Tim kami akan menghubungi
             Anda dalam 1x24 jam untuk konfirmasi.
           </p>
-          <Button onClick={() => setIsSubmitted(false)} variant="outline">
+          <Button
+            onClick={() => {
+              setIsSubmitted(false);
+              setFormData({ name: "", phone: "", email: "", activity: "", description: "" });
+              setDate(undefined);
+              setTime("");
+            }}
+            variant="outline"
+          >
             Ajukan Reservasi Lain
           </Button>
         </CardContent>
@@ -218,9 +262,10 @@ export function BookingForm() {
                     }
                     modifiers={{
                       partiallyBooked: (day) => {
+                        const dateStr = format(day, "yyyy-MM-dd");
                         const bookedTimes = bookedSlots
-                          .filter(slot => slot.date.toDateString() === day.toDateString())
-                          .map(slot => slot.time);
+                          .filter((slot) => slot.date === dateStr)
+                          .map((slot) => slot.time);
                         return bookedTimes.length > 0 && bookedTimes.length < timeSlots.length;
                       },
                       fullyBooked: (day) => isFullyBooked(day),
@@ -293,9 +338,19 @@ export function BookingForm() {
             />
           </div>
 
-          <Button type="submit" size="lg" className="w-full" variant="islamic">
-            <Send className="w-4 h-4 mr-2" />
-            Kirim Pengajuan
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            variant="islamic"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4 mr-2" />
+            )}
+            {isLoading ? "Mengirim..." : "Kirim Pengajuan"}
           </Button>
         </form>
       </CardContent>
