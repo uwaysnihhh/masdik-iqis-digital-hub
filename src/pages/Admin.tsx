@@ -43,9 +43,11 @@ import {
   LogOut,
   Eye,
   Menu,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 // Sample Data
 type BookingStatus = "pending" | "approved" | "rejected";
@@ -176,18 +178,56 @@ export default function Admin() {
   // View booking dialog
   const [viewBooking, setViewBooking] = useState<Booking | null>(null);
 
+  const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
+
   useEffect(() => {
-    const isLoggedIn = sessionStorage.getItem("isAdminLoggedIn");
-    if (!isLoggedIn) {
+    if (!authLoading && !user) {
       navigate("/admin-login");
     }
-  }, [navigate]);
+  }, [user, authLoading, navigate]);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("isAdminLoggedIn");
+  const handleLogout = async () => {
+    await signOut();
     navigate("/admin-login");
     toast({ title: "Logout Berhasil" });
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center">
+            <ShieldAlert className="w-16 h-16 mx-auto text-destructive mb-4" />
+            <h2 className="text-xl font-bold mb-2">Akses Ditolak</h2>
+            <p className="text-muted-foreground mb-4">
+              Anda tidak memiliki izin untuk mengakses halaman admin.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={() => navigate("/")}>
+                Kembali ke Beranda
+              </Button>
+              <Button variant="destructive" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleApprove = (id: string) => {
     setBookings(
