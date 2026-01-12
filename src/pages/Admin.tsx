@@ -61,6 +61,7 @@ interface Booking {
   activity_type: string;
   reservation_date: string;
   reservation_time: string;
+  reservation_end_time: string | null;
   description: string | null;
   status: string;
   created_at: string;
@@ -80,6 +81,7 @@ interface Event {
   title: string;
   event_date: string;
   event_time: string | null;
+  event_end_time: string | null;
   type: string;
   description: string | null;
 }
@@ -124,6 +126,7 @@ export default function Admin() {
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
+  const [eventEndTime, setEventEndTime] = useState("");
   const [eventType, setEventType] = useState("kajian");
   const [eventDescription, setEventDescription] = useState("");
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
@@ -278,6 +281,7 @@ export default function Admin() {
       title: eventTitle,
       event_date: eventDate,
       event_time: eventTime || null,
+      event_end_time: eventEndTime || null,
       type: eventType,
       description: eventDescription || null,
       created_by: user?.id,
@@ -292,6 +296,7 @@ export default function Admin() {
     setEventTitle("");
     setEventDate("");
     setEventTime("");
+    setEventEndTime("");
     setEventType("kajian");
     setEventDescription("");
     setEventDialogOpen(false);
@@ -300,46 +305,52 @@ export default function Admin() {
 
   const pendingBookings = bookings.filter((b) => b.status === "pending");
 
+  // Filter data based on search term
+  const filteredBookings = bookings.filter((b) =>
+    b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.activity_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.phone.includes(searchTerm)
+  );
+
+  const filteredTransactions = transactions.filter((t) =>
+    t.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredEvents = events.filter((e) =>
+    e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const stats = [
     {
       id: "saldo",
       title: "Total Saldo",
       value: formatCurrency(totalIncome - totalExpense),
       icon: Wallet,
-      trend: "+12%",
-      trendUp: true,
     },
     {
       id: "pemasukan",
       title: "Total Pemasukan",
       value: formatCurrency(totalIncome),
       icon: TrendingUp,
-      trend: "+25%",
-      trendUp: true,
     },
     {
       id: "pengeluaran",
       title: "Total Pengeluaran",
       value: formatCurrency(totalExpense),
       icon: TrendingDown,
-      trend: "-8%",
-      trendUp: false,
-    },
-    {
-      id: "reservasi",
-      title: "Reservasi Pending",
-      value: pendingBookings.length.toString(),
-      icon: Clock,
-      trend: "Butuh tindakan",
-      trendUp: null,
     },
     {
       id: "kegiatan",
       title: "Kegiatan Bulan Ini",
       value: events.length.toString(),
       icon: CalendarDays,
-      trend: "+3",
-      trendUp: true,
+    },
+    {
+      id: "reservasi",
+      title: "Reservasi Pending",
+      value: pendingBookings.length.toString(),
+      icon: Clock,
     },
   ];
 
@@ -561,24 +572,6 @@ export default function Admin() {
                           <div className="flex-1 min-w-0">
                             <p className="text-xs md:text-sm text-muted-foreground mb-1 truncate">{stat.title}</p>
                             <p className="text-lg md:text-2xl font-bold text-foreground truncate">{stat.value}</p>
-                            {stat.trendUp !== null && (
-                              <p
-                                className={cn(
-                                  "text-xs mt-1 flex items-center gap-1",
-                                  stat.trendUp ? "text-primary" : "text-destructive"
-                                )}
-                              >
-                                {stat.trendUp ? (
-                                  <TrendingUp className="w-3 h-3" />
-                                ) : (
-                                  <TrendingDown className="w-3 h-3" />
-                                )}
-                                {stat.trend}
-                              </p>
-                            )}
-                            {stat.trendUp === null && (
-                              <p className="text-xs mt-1 text-yellow-600">{stat.trend}</p>
-                            )}
                           </div>
                           <div className="w-10 h-10 md:w-12 md:h-12 gradient-islamic rounded-xl flex items-center justify-center shrink-0 ml-2">
                             <stat.icon className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
@@ -639,14 +632,14 @@ export default function Admin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {bookings.length === 0 ? (
+                        {filteredBookings.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                              Belum ada reservasi
+                              {searchTerm ? "Tidak ada reservasi yang cocok" : "Belum ada reservasi"}
                             </TableCell>
                           </TableRow>
                         ) : (
-                          bookings.map((booking) => (
+                          filteredBookings.map((booking) => (
                             <TableRow key={booking.id}>
                               <TableCell className="font-medium text-sm">{booking.name}</TableCell>
                               <TableCell className="hidden md:table-cell text-sm">{booking.phone}</TableCell>
@@ -699,7 +692,10 @@ export default function Admin() {
                                             </div>
                                             <div>
                                               <Label className="text-muted-foreground text-xs">Waktu</Label>
-                                              <p className="font-medium">{viewBooking.reservation_time}</p>
+                                              <p className="font-medium">
+                                                {viewBooking.reservation_time}
+                                                {viewBooking.reservation_end_time && ` - ${viewBooking.reservation_end_time}`}
+                                              </p>
                                             </div>
                                           </div>
                                           <div>
@@ -811,14 +807,14 @@ export default function Admin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {transactions.length === 0 ? (
+                        {filteredTransactions.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                              Belum ada transaksi
+                              {searchTerm ? "Tidak ada transaksi yang cocok" : "Belum ada transaksi"}
                             </TableCell>
                           </TableRow>
                         ) : (
-                          transactions.map((tx) => (
+                          filteredTransactions.map((tx) => (
                             <TableRow key={tx.id}>
                               <TableCell className="text-sm">{new Date(tx.created_at).toLocaleDateString("id-ID")}</TableCell>
                               <TableCell className="font-medium text-sm">{tx.description}</TableCell>
@@ -864,21 +860,29 @@ export default function Admin() {
                               onChange={(e) => setEventTitle(e.target.value)}
                             />
                           </div>
+                          <div className="space-y-2">
+                            <Label>Tanggal</Label>
+                            <Input
+                              type="date"
+                              value={eventDate}
+                              onChange={(e) => setEventDate(e.target.value)}
+                            />
+                          </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label>Tanggal</Label>
-                              <Input
-                                type="date"
-                                value={eventDate}
-                                onChange={(e) => setEventDate(e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Waktu</Label>
+                              <Label>Waktu Mulai</Label>
                               <Input
                                 type="time"
                                 value={eventTime}
                                 onChange={(e) => setEventTime(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Waktu Selesai</Label>
+                              <Input
+                                type="time"
+                                value={eventEndTime}
+                                onChange={(e) => setEventEndTime(e.target.value)}
                               />
                             </div>
                           </div>
@@ -923,18 +927,21 @@ export default function Admin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {events.length === 0 ? (
+                        {filteredEvents.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                              Belum ada kegiatan
+                              {searchTerm ? "Tidak ada kegiatan yang cocok" : "Belum ada kegiatan"}
                             </TableCell>
                           </TableRow>
                         ) : (
-                          events.map((event) => (
+                          filteredEvents.map((event) => (
                             <TableRow key={event.id}>
                               <TableCell className="font-medium text-sm">{event.title}</TableCell>
                               <TableCell className="text-sm">{event.event_date}</TableCell>
-                              <TableCell className="text-sm">{event.event_time || "-"}</TableCell>
+                              <TableCell className="text-sm">
+                                {event.event_time || "-"}
+                                {event.event_end_time && ` - ${event.event_end_time}`}
+                              </TableCell>
                               <TableCell>
                                 <Badge variant="outline">{event.type}</Badge>
                               </TableCell>
