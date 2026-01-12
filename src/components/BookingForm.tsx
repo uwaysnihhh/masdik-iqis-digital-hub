@@ -39,6 +39,7 @@ interface BookedSlot {
 export function BookingForm() {
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
@@ -110,6 +111,7 @@ export function BookingForm() {
       activity_type: formData.activity,
       reservation_date: format(date, "yyyy-MM-dd"),
       reservation_time: time,
+      reservation_end_time: endTime || null,
       description: formData.description || null,
       status: "pending",
     });
@@ -152,6 +154,7 @@ export function BookingForm() {
               setFormData({ name: "", phone: "", email: "", activity: "", description: "" });
               setDate(undefined);
               setTime("");
+              setEndTime("");
             }}
             variant="outline"
           >
@@ -306,12 +309,26 @@ export function BookingForm() {
             </Label>
             {date ? (
               <>
-                <Input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="w-full"
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Mulai</Label>
+                    <Input
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Sampai</Label>
+                    <Input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
                 {getAvailableSlots(date).length < timeSlots.length && (
                   <p className="text-xs text-amber-600">
                     ⚠️ Beberapa waktu pada tanggal ini sudah dipesan
