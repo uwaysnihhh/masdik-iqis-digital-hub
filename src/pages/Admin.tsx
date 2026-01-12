@@ -111,6 +111,7 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [statDialogOpen, setStatDialogOpen] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Transaction form state
@@ -166,6 +167,14 @@ export default function Admin() {
     navigate("/admin-login");
     toast({ title: "Logout Berhasil" });
   };
+
+  const totalIncome = transactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalExpense = transactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -288,16 +297,6 @@ export default function Admin() {
     setEventDialogOpen(false);
     toast({ title: "Kegiatan Ditambahkan" });
   };
-
-  const totalIncome = transactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalExpense = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const [statDialogOpen, setStatDialogOpen] = useState<string | null>(null);
 
   const pendingBookings = bookings.filter((b) => b.status === "pending");
 
