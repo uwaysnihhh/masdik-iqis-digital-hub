@@ -40,7 +40,7 @@ export default function Pustaka() {
       setIsLoading(true);
       try {
         const { data, error } = await supabase
-          .from("pustaka" as any)
+          .from("pustaka")
           .select("*")
           .eq("is_active", true)
           .order("created_at", { ascending: false });

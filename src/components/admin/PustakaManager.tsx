@@ -71,7 +71,8 @@ export function PustakaManager({ userId, searchTerm }: PustakaManagerProps) {
 
   const fetchItems = async () => {
     setIsLoading(true);
-    const { data } = await (supabase.from("pustaka" as any) as any)
+    const { data } = await supabase
+      .from("pustaka")
       .select("*")
       .order("created_at", { ascending: false });
     if (data) setItems(data as PustakaItem[]);
@@ -83,11 +84,15 @@ export function PustakaManager({ userId, searchTerm }: PustakaManagerProps) {
       toast({ title: "Judul dan URL file wajib diisi", variant: "destructive" });
       return;
     }
-    const { data, error } = await (supabase.from("pustaka" as any) as any).insert({
-      title, description: description || null, type, file_url: fileUrl,
-      thumbnail_url: thumbnailUrl || null, category: category || null,
-      created_by: userId, created_by_name: createdByName || null,
-    }).select().single();
+    const { data, error } = await supabase
+      .from("pustaka")
+      .insert({
+        title, description: description || null, type, file_url: fileUrl,
+        thumbnail_url: thumbnailUrl || null, category: category || null,
+        created_by: userId, created_by_name: createdByName || null,
+      })
+      .select()
+      .single();
     if (error) { toast({ title: "Gagal menambahkan", variant: "destructive" }); return; }
     setItems([data as PustakaItem, ...items]);
     resetForm(); setDialogOpen(false);
@@ -95,7 +100,7 @@ export function PustakaManager({ userId, searchTerm }: PustakaManagerProps) {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await (supabase.from("pustaka" as any) as any).delete().eq("id", id);
+    const { error } = await supabase.from("pustaka").delete().eq("id", id);
     if (error) { toast({ title: "Gagal menghapus", variant: "destructive" }); return; }
     setItems(items.filter((item) => item.id !== id));
     setDeleteId(null);

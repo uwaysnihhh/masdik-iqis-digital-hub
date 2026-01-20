@@ -226,7 +226,7 @@ export default function Admin() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/admin-login");
+      navigate("/admin-login", { replace: true });
     }
   }, [user, authLoading, navigate]);
 
