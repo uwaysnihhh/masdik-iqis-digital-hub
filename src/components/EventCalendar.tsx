@@ -34,7 +34,6 @@ const typeColors: Record<string, string> = {
   reservasi: "border-secondary text-secondary-foreground bg-transparent",
   pernikahan: "border-pink-500 text-pink-500 bg-transparent",
   aqiqah: "border-amber-500 text-amber-500 bg-transparent",
-  tahlilan: "border-purple-500 text-purple-500 bg-transparent",
   rapat: "border-blue-500 text-blue-500 bg-transparent",
   lainnya: "border-gray-500 text-gray-500 bg-transparent",
 };
@@ -95,9 +94,14 @@ export function EventCalendar() {
               : reservation.reservation_time
             : "";
 
+          // Use description as title if available, otherwise use activity type
+          const displayTitle = reservation.description 
+            ? reservation.description 
+            : reservation.activity_type.charAt(0).toUpperCase() + reservation.activity_type.slice(1);
+          
           allEvents.push({
             id: reservation.id,
-            title: `Reservasi: ${reservation.activity_type.charAt(0).toUpperCase() + reservation.activity_type.slice(1)}`,
+            title: displayTitle,
             date: new Date(reservation.reservation_date),
             time: timeStr,
             description: reservation.description,

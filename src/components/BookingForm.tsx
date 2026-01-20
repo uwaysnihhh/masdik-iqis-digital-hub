@@ -24,7 +24,6 @@ const activityTypes = [
   { value: "pernikahan", label: "Akad Nikah / Resepsi" },
   { value: "pengajian", label: "Pengajian / Kajian" },
   { value: "aqiqah", label: "Aqiqah" },
-  { value: "tahlilan", label: "Tahlilan" },
   { value: "rapat", label: "Rapat / Pertemuan" },
   { value: "lainnya", label: "Lainnya" },
 ];

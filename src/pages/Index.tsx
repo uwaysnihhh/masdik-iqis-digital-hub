@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { ArabicGreeting } from "@/components/ArabicGreeting";
 import { PrayerTimes } from "@/components/PrayerTimes";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CalendarDays, Wallet, Users, FileText } from "lucide-react";
+import { ArrowRight, CalendarDays, Wallet, Users, FileText, BookOpen, GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Index() {
@@ -32,7 +32,7 @@ export default function Index() {
 
             {/* Quick Links */}
             <div
-              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 animate-fade-in"
+              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-12 animate-fade-in"
               style={{ animationDelay: "0.4s" }}
             >
               <QuickLink
@@ -40,6 +40,18 @@ export default function Index() {
                 icon={CalendarDays}
                 title="Kegiatan"
                 description="Lihat jadwal kegiatan masjid"
+              />
+              <QuickLink
+                to="/e-taklim"
+                icon={GraduationCap}
+                title="e-Taklim"
+                description="Pembelajaran online masjid"
+              />
+              <QuickLink
+                to="/pustaka"
+                icon={BookOpen}
+                title="Pustaka"
+                description="Arsip materi & video taklim"
               />
               <QuickLink
                 to="/layanan"

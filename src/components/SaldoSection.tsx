@@ -1,20 +1,19 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Wallet, QrCode, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, QrCode, Download, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import qrisImage from "@/assets/qris-donasi.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
-const saldoData = {
-  total: 45750000,
-  lastUpdated: new Date(),
-  transactions: [
-    { id: "1", type: "income" as const, amount: 5000000, description: "Donasi Jumat", date: new Date(2024, 11, 13) },
-    { id: "2", type: "expense" as const, amount: 1500000, description: "Pembayaran Listrik", date: new Date(2024, 11, 10) },
-    { id: "3", type: "income" as const, amount: 2500000, description: "Infaq Bulanan", date: new Date(2024, 11, 5) },
-    { id: "4", type: "expense" as const, amount: 800000, description: "Perawatan AC", date: new Date(2024, 11, 3) },
-    { id: "5", type: "income" as const, amount: 10000000, description: "Donasi Renovasi", date: new Date(2024, 11, 1) },
-  ],
-};
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  description: string;
+  created_at: string;
+  category: string | null;
+}
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -25,13 +24,43 @@ function formatCurrency(amount: number): string {
 }
 
 export function SaldoSection() {
-  const totalIncome = saldoData.transactions
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (data && !error) {
+        setTransactions(data);
+      }
+      setIsLoading(false);
+    };
+
+    fetchTransactions();
+  }, []);
+
+  const totalIncome = transactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalExpense = saldoData.transactions
+  const totalExpense = transactions
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalSaldo = totalIncome - totalExpense;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -42,7 +71,7 @@ export function SaldoSection() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-primary-foreground/80 text-sm mb-1">Saldo Masjid</p>
-              <p className="text-3xl lg:text-4xl font-bold">{formatCurrency(saldoData.total)}</p>
+              <p className="text-3xl lg:text-4xl font-bold">{formatCurrency(totalSaldo)}</p>
             </div>
             <div className="hidden sm:block">
               <Wallet className="w-16 h-16 text-primary-foreground/30" />
@@ -116,48 +145,55 @@ export function SaldoSection() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {saldoData.transactions.slice(0, 5).map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
+            {transactions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Wallet className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>Belum ada transaksi</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {transactions.slice(0, 5).map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center",
+                          transaction.type === "income"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-destructive/10 text-destructive"
+                        )}
+                      >
+                        {transaction.type === "income" ? (
+                          <TrendingUp className="w-5 h-5" />
+                        ) : (
+                          <TrendingDown className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm text-foreground">
+                          {transaction.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.created_at).toLocaleDateString("id-ID")}
+                        </p>
+                      </div>
+                    </div>
+                    <p
                       className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center",
-                        transaction.type === "income"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-destructive/10 text-destructive"
+                        "font-semibold text-sm",
+                        transaction.type === "income" ? "text-primary" : "text-destructive"
                       )}
                     >
-                      {transaction.type === "income" ? (
-                        <TrendingUp className="w-5 h-5" />
-                      ) : (
-                        <TrendingDown className="w-5 h-5" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm text-foreground">
-                        {transaction.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {transaction.date.toLocaleDateString("id-ID")}
-                      </p>
-                    </div>
+                      {transaction.type === "income" ? "+" : "-"}
+                      {formatCurrency(transaction.amount)}
+                    </p>
                   </div>
-                  <p
-                    className={cn(
-                      "font-semibold text-sm",
-                      transaction.type === "income" ? "text-primary" : "text-destructive"
-                    )}
-                  >
-                    {transaction.type === "income" ? "+" : "-"}
-                    {formatCurrency(transaction.amount)}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
