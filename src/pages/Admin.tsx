@@ -245,43 +245,6 @@ export default function Admin() {
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Memuat...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show access denied if not admin
-  if (user && !isAdmin) {
-    return (
-      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="pt-6 text-center">
-            <ShieldAlert className="w-16 h-16 mx-auto text-destructive mb-4" />
-            <h2 className="text-xl font-bold mb-2">Akses Ditolak</h2>
-            <p className="text-muted-foreground mb-4">
-              Anda tidak memiliki izin untuk mengakses halaman admin.
-            </p>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => navigate("/")}>
-                Kembali ke Beranda
-              </Button>
-              <Button variant="destructive" onClick={handleLogout}>
-                Logout
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const handleApprove = async (id: string) => {
     const { error } = await supabase
       .from("reservations")
@@ -425,7 +388,11 @@ export default function Admin() {
     }).select().single();
 
     if (error) {
-      toast({ title: "Gagal menambahkan kegiatan", variant: "destructive" });
+      toast({
+        title: "Gagal menambahkan kegiatan",
+        description: error.message,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -485,6 +452,43 @@ export default function Admin() {
     const dateStr = format(day, "yyyy-MM-dd");
     return bookedSlots.some((slot) => slot.date === dateStr);
   };
+
+  // Show loading while checking auth (must be after all hooks)
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center">
+            <ShieldAlert className="w-16 h-16 mx-auto text-destructive mb-4" />
+            <h2 className="text-xl font-bold mb-2">Akses Ditolak</h2>
+            <p className="text-muted-foreground mb-4">
+              Anda tidak memiliki izin untuk mengakses halaman admin.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={() => navigate("/")}> 
+                Kembali ke Beranda
+              </Button>
+              <Button variant="destructive" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Filter data based on search term
   const filteredBookings = bookings.filter((b) =>
@@ -1220,9 +1224,9 @@ export default function Admin() {
                               <SelectContent>
                                 <SelectItem value="kajian">Kajian</SelectItem>
                                 <SelectItem value="pengajian">Pengajian</SelectItem>
-                                <SelectItem value="sholat">Sholat</SelectItem>
+                                <SelectItem value="shalat">Sholat</SelectItem>
                                 <SelectItem value="sosial">Sosial</SelectItem>
-                                <SelectItem value="other">Lainnya</SelectItem>
+                                <SelectItem value="lainnya">Lainnya</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
