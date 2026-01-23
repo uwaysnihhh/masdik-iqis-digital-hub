@@ -11,7 +11,7 @@ export interface Event {
   date: Date;
   time?: string;
   description: string;
-  type: 'kajian' | 'pengajian' | 'shalat' | 'acara' | 'sosial' | 'reservasi';
+  type: 'kajian' | 'pengajian' | 'shalat' | 'sholat' | 'acara' | 'sosial' | 'reservasi' | 'lainnya';
 }
 
 export interface BookingRequest {
