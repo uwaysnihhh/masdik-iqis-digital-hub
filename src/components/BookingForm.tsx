@@ -139,12 +139,12 @@ export function BookingForm() {
     });
   }, [date, time, bookedSlots]);
 
-  // Check if date is fully booked
+  // Check if date is fully booked (all time slots are taken)
   const isFullyBooked = (day: Date) => {
-    const dateStr = format(day, "yyyy-MM-dd");
-    const bookedOnDate = bookedSlots.filter((slot) => slot.date === dateStr);
-    // Consider fully booked if more than 80% of time slots are taken
-    return bookedOnDate.length >= timeOptions.length * 0.8;
+    // Check each time slot to see if it's available
+    const availableSlots = timeOptions.filter((t) => !isTimeBooked(day, t));
+    // If no available slots, the day is fully booked
+    return availableSlots.length === 0;
   };
 
   // Check if date has some bookings
